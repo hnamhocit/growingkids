@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plant_store/app/router/routes_name.dart';
-import 'package:plant_store/features/products/presentation/widgets/app_bottom_nagivation_bar.dart';
-import 'package:plant_store/features/tabs/presentation/widgets/home/index.dart';
+import 'package:growingkids/app/blocs/auth/auth_bloc.dart';
+import 'package:growingkids/app/blocs/user/user_bloc.dart';
+import 'package:growingkids/app/router/routes_name.dart';
+import 'package:growingkids/features/products/presentation/widgets/app_bottom_nagivation_bar.dart';
+import 'package:growingkids/features/tabs/presentation/widgets/home/index.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -52,11 +55,29 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
-          IconButton(
-            onPressed: () {
-              context.pushNamed(RoutesName.authEnter);
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state is! AuthAuthenticated) {
+                return IconButton(
+                  onPressed: () {
+                    context.pushNamed(RoutesName.authEnter);
+                  },
+                  icon: const Icon(Icons.person_outline, color: Colors.black),
+                );
+              }
+
+              final userState = context.watch<UserBloc>().state;
+              final photoUrl = userState is UserLoaded
+                  ? userState.profile.photoUrl
+                  : null;
+
+              return IconButton(
+                onPressed: () {
+                  context.goNamed(RoutesName.tabProfile);
+                },
+                icon: _UserAvatar(photoUrl: photoUrl),
+              );
             },
-            icon: const Icon(Icons.person_outline, color: Colors.black),
           ),
         ],
       ),
@@ -78,7 +99,32 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar: AppBottomNagivationBar(),
+      bottomNavigationBar: const AppBottomNagivationBar(activeTab: AppTab.home),
+    );
+  }
+}
+
+class _UserAvatar extends StatelessWidget {
+  final String? photoUrl;
+
+  const _UserAvatar({required this.photoUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    if (photoUrl == null || photoUrl!.isEmpty) {
+      return const CircleAvatar(
+        radius: 13,
+        backgroundColor: Color(0xFFE5E7EB),
+        child: Icon(Icons.person, color: Colors.black, size: 16),
+      );
+    }
+
+    return CircleAvatar(
+      radius: 13,
+      backgroundColor: const Color(0xFFE5E7EB),
+      backgroundImage: NetworkImage(photoUrl!),
+      onBackgroundImageError: (_, _) {},
+      child: null,
     );
   }
 }

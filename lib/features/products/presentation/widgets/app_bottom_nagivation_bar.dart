@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:growingkids/app/router/routes_name.dart';
+
+enum AppTab { home, scan, profile }
 
 class AppBottomNagivationBar extends StatelessWidget {
-  const AppBottomNagivationBar({super.key});
+  final AppTab activeTab;
+
+  const AppBottomNagivationBar({super.key, required this.activeTab});
 
   @override
   Widget build(BuildContext context) {
@@ -23,38 +29,56 @@ class AppBottomNagivationBar extends StatelessWidget {
       child: SafeArea(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment
-              .center, // Căn giữa tất cả các icon theo chiều dọc
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildNavItem(Icons.home_filled, 'Home', true, context),
-            _buildNavItem(Icons.grid_view_rounded, 'Catalog', false, context),
-
-            // NÚT TRUNG TÂM NỔI BẬT NẰM CÙNG HÀNG
-            _buildCenterButton(context),
-
-            _buildNavItem(Icons.eco_outlined, 'My Plants', false, context),
-            _buildNavItem(Icons.person_outline, 'Profile', false, context),
+            _buildNavItem(
+              icon: Icons.home_filled,
+              label: 'Home',
+              isActive: activeTab == AppTab.home,
+              onTap: () => _goToTab(context, AppTab.home),
+              context: context,
+            ),
+            _buildNavItem(
+              icon: Icons.grid_view_rounded,
+              label: 'Catalog',
+              isActive: false,
+              onTap: () {},
+              context: context,
+            ),
+            _buildCenterButton(context, isActive: activeTab == AppTab.scan),
+            _buildNavItem(
+              icon: Icons.eco_outlined,
+              label: 'My Plants',
+              isActive: false,
+              onTap: () {},
+              context: context,
+            ),
+            _buildNavItem(
+              icon: Icons.person_outline,
+              label: 'Profile',
+              isActive: activeTab == AppTab.profile,
+              onTap: () => _goToTab(context, AppTab.profile),
+              context: context,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCenterButton(BuildContext context) {
+  Widget _buildCenterButton(BuildContext context, {required bool isActive}) {
     final cs = Theme.of(context).colorScheme;
 
     return GestureDetector(
-      onTap: () {
-        // TODO: Xử lý khi bấm nút Scan/Camera
-      },
+      onTap: () => _goToTab(context, AppTab.scan),
       child: Container(
-        width: 56, // Kích thước nút
+        width: 56,
         height: 56,
         decoration: BoxDecoration(
-          color: cs.primary, // Màu xanh sáng
+          color: cs.primary,
           shape: BoxShape.circle,
+          border: isActive ? Border.all(color: cs.onPrimary, width: 2) : null,
           boxShadow: [
-            // Thêm một lớp bóng đổ màu xanh mờ để tạo cảm giác "Glow" (phát sáng)
             BoxShadow(
               color: cs.primary.withValues(alpha: 0.4),
               blurRadius: 16,
@@ -63,8 +87,7 @@ class AppBottomNagivationBar extends StatelessWidget {
           ],
         ),
         child: Icon(
-          Icons
-              .document_scanner_outlined, // Thay bằng icon bạn muốn (ví dụ: Icons.camera_alt)
+          Icons.document_scanner_outlined,
           color: cs.onPrimary,
           size: 28,
         ),
@@ -72,17 +95,31 @@ class AppBottomNagivationBar extends StatelessWidget {
     );
   }
 
-  // Giữ nguyên hàm _buildNavItem cũ của bạn
-  Widget _buildNavItem(
-    IconData icon,
-    String label,
-    bool isActive,
-    BuildContext context,
-  ) {
+  void _goToTab(BuildContext context, AppTab tab) {
+    switch (tab) {
+      case AppTab.home:
+        context.goNamed(RoutesName.tabHome);
+        return;
+      case AppTab.scan:
+        context.goNamed(RoutesName.tabScan);
+        return;
+      case AppTab.profile:
+        context.goNamed(RoutesName.tabProfile);
+        return;
+    }
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+    required BuildContext context,
+  }) {
     final cs = Theme.of(context).colorScheme;
 
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,

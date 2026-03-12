@@ -1,9 +1,12 @@
-import 'package:plant_store/features/auth/domain/repositories/auth_repository.dart';
+import 'package:growingkids/features/auth/domain/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final SupabaseClient client;
   const AuthRepositoryImpl(this.client);
+
+  @override
+  User? get currentUser => client.auth.currentUser;
 
   @override
   Future<User?> signInWithEmailAndPassword({
@@ -33,11 +36,6 @@ class AuthRepositoryImpl implements AuthRepository {
       password: password,
       data: {'display_name': displayName},
     );
-
-    if (response.session == null) {
-      return null;
-    }
-
     return response.user;
   }
 

@@ -1,6 +1,6 @@
 {
-    "name": "plant_store",
-    "short_name": "plant_store",
+    "name": "growingkids",
+    "short_name": "growingkids",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:plant_store/features/products/presentation/widgets/index.dart';
+import 'package:growingkids/app/router/routes_name.dart';
 
 // Dữ liệu mẫu (Fixed data)
 final cartItems = [
@@ -46,7 +46,11 @@ class CartScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(LucideIcons.chevronLeft, color: Colors.black),
           onPressed: () {
-            context.pop();
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+            context.goNamed(RoutesName.tabHome);
           },
         ),
         title: Text(
@@ -197,9 +201,6 @@ class CartScreen extends StatelessWidget {
           ),
         ],
       ),
-
-      // 3. BOTTOM NAVIGATION BAR
-      bottomNavigationBar: AppBottomNagivationBar(),
     );
   }
 
@@ -215,49 +216,6 @@ class CartScreen extends StatelessWidget {
             color: Colors.black,
             fontSize: 15,
             fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Icon dưới Bottom Nav
-  Widget _buildNavItem(
-    IconData icon,
-    String label,
-    bool isActive,
-    Color primaryColor,
-  ) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Icon(icon, color: isActive ? Colors.black : Colors.grey),
-            if (isActive)
-              Positioned(
-                right: -2,
-                top: -2,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: isActive ? Colors.black : Colors.grey,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ],

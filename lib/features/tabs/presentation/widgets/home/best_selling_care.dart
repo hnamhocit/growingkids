@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:plant_store/features/tabs/presentation/widgets/home/product_card.dart';
+import 'package:growingkids/features/tabs/presentation/widgets/home/product_card.dart';
 
 final products = [
   {

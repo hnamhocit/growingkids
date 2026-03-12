@@ -1,3 +1,3 @@
-# plant_store
+# growingkids
 
 A new Flutter project.

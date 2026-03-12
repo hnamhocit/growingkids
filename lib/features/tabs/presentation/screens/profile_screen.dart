@@ -1,77 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:plant_store/features/products/presentation/widgets/app_bottom_nagivation_bar.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:growingkids/app/blocs/auth/auth_bloc.dart';
+import 'package:growingkids/app/blocs/user/user_bloc.dart';
+import 'package:growingkids/app/router/routes_name.dart';
+import 'package:growingkids/features/products/presentation/widgets/app_bottom_nagivation_bar.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-// Thêm SingleTickerProviderStateMixin để chạy Animation
-class _ProfileScreenState extends State<ProfileScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _fireAnimationController;
-  late Animation<double> _fireScaleAnimation;
-
-  // Dữ liệu Mock (Bạn có thể thay bằng dữ liệu thật từ API)
-  final String userName = 'Alex Green';
-  final String bio = 'Urban jungle creator 🌿 | Plant parent of 30+';
-  final int sharedPosts = 4250;
-  final int purchasedItems = 128;
-  final int greenPoints = 15400;
-  final int rank = 2; // Thử đổi thành 1, 2, 3 hoặc 10 để xem màu sắc thay đổi
-  final int streakDays = 14;
-
-  @override
-  void initState() {
-    super.initState();
-    // Cài đặt hiệu ứng đập (pulse) cho ngọn lửa
-    _fireAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    )..repeat(reverse: true); // Lặp lại liên tục và đảo ngược
-
-    _fireScaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(
-        parent: _fireAnimationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _fireAnimationController.dispose();
-    super.dispose();
-  }
-
-  // Hàm chuyển đổi số lớn (VD: 4250 -> 4.2k)
-  String _formatNumber(int num) {
-    if (num >= 1000) {
-      return '${(num / 1000).toStringAsFixed(1)}k';
-    }
-    return num.toString();
-  }
-
-  // Hàm lấy màu Huy hiệu theo Top
-  Color _getRankColor(int rank) {
-    switch (rank) {
-      case 1:
-        return const Color(0xFFFFD700); // Vàng (Gold)
-      case 2:
-        return const Color(0xFFC0C0C0); // Bạc (Silver)
-      case 3:
-        return const Color(0xFFCD7F32); // Đồng (Bronze)
-      default:
-        return Colors.grey.shade400; // Xám cho các top khác
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final backgroundColor = const Color(0xFFF7F9F8);
+    final authState = context.watch<AuthBloc>().state;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -83,189 +24,143 @@ class _ProfileScreenState extends State<ProfileScreen>
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
+      body: authState is AuthAuthenticated
+          ? _AuthenticatedProfile(userId: authState.user.id)
+          : _GuestProfile(),
+      bottomNavigationBar: const AppBottomNagivationBar(
+        activeTab: AppTab.profile,
+      ),
+    );
+  }
+}
+
+class _GuestProfile extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.person_outline, size: 64, color: Colors.grey),
+            const SizedBox(height: 12),
+            const Text(
+              'Bạn chưa đăng nhập',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Đăng nhập để xem hồ sơ và quản lý tài khoản của bạn.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: () {
+                context.pushNamed(RoutesName.authEnter);
+              },
+              child: const Text('Đăng nhập / Đăng ký'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AuthenticatedProfile extends StatelessWidget {
+  final String userId;
+
+  const _AuthenticatedProfile({required this.userId});
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final userState = context.watch<UserBloc>().state;
+
+    String displayName = 'User';
+    String email = '';
+    String? photoUrl;
+    String role = 'customer';
+
+    if (authState is AuthAuthenticated) {
+      displayName =
+          authState.user.userMetadata?['display_name'] as String? ??
+          displayName;
+      email = authState.user.email ?? '';
+    }
+
+    if (userState is UserLoaded && userState.profile.id == userId) {
+      displayName = userState.profile.displayName;
+      photoUrl = userState.profile.photoUrl;
+      role = userState.profile.role.name;
+    }
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           children: [
+            _ProfileAvatar(photoUrl: photoUrl),
             const SizedBox(height: 16),
-            // 1. AVATAR & BIO
-            Center(
-              child: Column(
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: cs.primary, width: 3),
-                      image: const DecorationImage(
-                        image: NetworkImage(
-                          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400',
-                        ),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    userName,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    bio,
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                  ),
-                ],
-              ),
+            Text(
+              displayName,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 24),
-
-            // 2. STATS (POSTS & PURCHASES)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildStatColumn(
-                      'Shared Posts',
-                      _formatNumber(sharedPosts),
-                    ),
-                    Container(
-                      height: 40,
-                      width: 1,
-                      color: Colors.grey.shade200,
-                    ),
-                    _buildStatColumn(
-                      'Purchased',
-                      _formatNumber(purchasedItems),
-                    ),
-                  ],
+            if (email.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(email, style: TextStyle(color: Colors.grey.shade600)),
+            ],
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                role.toUpperCase(),
+                style: const TextStyle(
+                  color: Color(0xFF166534),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-
-            // 3. GAMIFICATION (POINTS, RANK, STREAK)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  // Green Points
-                  Expanded(
-                    child: _buildGamificationCard(
-                      title: 'Points',
-                      value: _formatNumber(greenPoints),
-                      icon: Icons.eco,
-                      iconColor: cs.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Leaderboard Rank
-                  Expanded(
-                    child: _buildGamificationCard(
-                      title: 'Top',
-                      value: '#$rank',
-                      icon: Icons.emoji_events,
-                      iconColor: _getRankColor(rank),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Login Streak (Có Animation ngọn lửa)
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Animated Fire Icon
-                          ScaleTransition(
-                            scale: _fireScaleAnimation,
-                            child: const Icon(
-                              Icons.local_fire_department,
-                              color: Colors.deepOrange,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '$streakDays Days',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Streak',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+            if (userState is UserFailure) ...[
+              const SizedBox(height: 12),
+              Text(
+                userState.message,
+                style: const TextStyle(color: Colors.redAccent),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 32),
-
-            // 4. MENU DƯỚI CÙNG
+            ],
+            const SizedBox(height: 28),
             _buildMenuOption(Icons.edit_outlined, 'Edit Profile'),
             _buildMenuOption(Icons.favorite_border, 'My Favorites'),
             _buildMenuOption(Icons.history, 'Order History'),
             _buildMenuOption(Icons.help_outline, 'Help & Support'),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.red.shade50,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  context.read<AuthBloc>().add(const AuthSignOutRequested());
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.red.shade50,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Text(
-                    'Log Out',
-                    style: TextStyle(
-                      color: Colors.red.shade400,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                child: Text(
+                  'Log Out',
+                  style: TextStyle(
+                    color: Colors.red.shade400,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -274,65 +169,12 @@ class _ProfileScreenState extends State<ProfileScreen>
           ],
         ),
       ),
-
-      // 5. BOTTOM NAVIGATION BAR (Giữ đồng bộ với màn Home/Cart)
-      bottomNavigationBar: AppBottomNagivationBar(),
     );
   }
 
-  // Helper Widet cho Stats (Bài viết, Sản phẩm)
-  Widget _buildStatColumn(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-      ],
-    );
-  }
-
-  // Helper Widget cho Gamification Card (Điểm, Rank)
-  Widget _buildGamificationCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: iconColor, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 4),
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-        ],
-      ),
-    );
-  }
-
-  // Helper Widget cho Menu List
   Widget _buildMenuOption(IconData icon, String title) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -346,28 +188,27 @@ class _ProfileScreenState extends State<ProfileScreen>
       onTap: () {},
     );
   }
+}
 
-  // Helper Widget cho Bottom Nav
-  Widget _buildNavItem(
-    IconData icon,
-    String label,
-    bool isActive,
-    Color primaryColor,
-  ) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: isActive ? primaryColor : Colors.grey),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: isActive ? primaryColor : Colors.grey,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ],
+class _ProfileAvatar extends StatelessWidget {
+  final String? photoUrl;
+
+  const _ProfileAvatar({required this.photoUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    if (photoUrl == null || photoUrl!.isEmpty) {
+      return CircleAvatar(
+        radius: 50,
+        backgroundColor: Colors.grey.shade200,
+        child: const Icon(Icons.person, size: 42, color: Colors.black54),
+      );
+    }
+
+    return CircleAvatar(
+      radius: 50,
+      backgroundColor: Colors.grey.shade200,
+      backgroundImage: NetworkImage(photoUrl!),
     );
   }
 }

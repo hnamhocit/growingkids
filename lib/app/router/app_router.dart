@@ -1,10 +1,11 @@
 import 'package:go_router/go_router.dart';
-import 'package:plant_store/app/router/routes_name.dart';
-import 'package:plant_store/features/auth/presentation/screens/index.dart';
+import 'package:growingkids/app/router/routes_name.dart';
+import 'package:growingkids/features/auth/presentation/screens/index.dart';
 import 'package:flutter/material.dart';
-import 'package:plant_store/features/tabs/presentation/screens/cart_screen.dart';
-import 'package:plant_store/features/tabs/presentation/screens/home_screen.dart';
-import 'package:plant_store/features/tabs/presentation/screens/profile_screen.dart';
+import 'package:growingkids/features/tabs/presentation/screens/cart_screen.dart';
+import 'package:growingkids/features/tabs/presentation/screens/home_screen.dart';
+import 'package:growingkids/features/tabs/presentation/screens/profile_screen.dart';
+import 'package:growingkids/features/tabs/presentation/screens/scan_screen.dart';
 
 GoRouter makeRouter() {
   return GoRouter(
@@ -37,6 +38,11 @@ GoRouter makeRouter() {
         path: '/profile',
         name: RoutesName.tabProfile,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/scan',
+        name: RoutesName.tabScan,
+        builder: (context, state) => const ScanScreen(),
       ),
       GoRoute(
         path: '/auth',

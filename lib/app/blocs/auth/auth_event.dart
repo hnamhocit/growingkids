@@ -4,6 +4,10 @@ sealed class AuthEvent {
   const AuthEvent();
 }
 
+class AuthStarted extends AuthEvent {
+  const AuthStarted();
+}
+
 class AuthSignInRequested extends AuthEvent {
   final String email;
   final String password;

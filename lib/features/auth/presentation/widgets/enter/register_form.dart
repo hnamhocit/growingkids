@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:plant_store/core/validators/index.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:growingkids/app/blocs/auth/auth_bloc.dart';
+import 'package:growingkids/core/validators/index.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
@@ -10,28 +12,30 @@ class RegisterForm extends StatefulWidget {
 
 class _RegisterFormState extends State<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
-  bool _isSubmitting = false;
 
   String _name = '';
   String _email = '';
   String _password = '';
 
-  Future<void> _submitForm() async {
+  void _submitForm() {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
 
-    setState(() => _isSubmitting = true);
-
-    await Future.delayed(const Duration(seconds: 2));
-    print('Register success: $_name, $_email');
-
-    if (mounted) {
-      setState(() => _isSubmitting = false);
-    }
+    context.read<AuthBloc>().add(
+      AuthSignUpRequested(
+        displayName: _name.trim(),
+        email: _email.trim(),
+        password: _password.trim(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isSubmitting = context.select<AuthBloc, bool>(
+      (bloc) => bloc.state is AuthLoading,
+    );
+
     return Form(
       key: _formKey,
       child: Column(
@@ -88,14 +92,14 @@ class _RegisterFormState extends State<RegisterForm> {
 
           // SUBMIT BUTTON
           FilledButton(
-            onPressed: _isSubmitting ? null : _submitForm,
+            onPressed: isSubmitting ? null : _submitForm,
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: _isSubmitting
+            child: isSubmitting
                 ? const SizedBox(
                     height: 20,
                     width: 20,
