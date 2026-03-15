@@ -33,7 +33,7 @@ class _AppState extends State<App> {
     return MaterialApp.router(
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
-      title: 'hnfin',
+      title: 'GrowingKids',
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.system,

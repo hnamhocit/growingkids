@@ -120,7 +120,7 @@ class _ScanScreenState extends State<ScanScreen> {
   Future<void> _initPhotoController() async {
     final cameras = await availableCameras();
     if (cameras.isEmpty) {
-      throw StateError('No camera available');
+      throw StateError('Không tìm thấy camera khả dụng');
     }
 
     CameraDescription selectedCamera = cameras.first;
@@ -245,7 +245,7 @@ class _ScanScreenState extends State<ScanScreen> {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'Scan',
+          'Quét',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
@@ -260,7 +260,7 @@ class _ScanScreenState extends State<ScanScreen> {
                 segments: const [
                   ButtonSegment<ScanMode>(
                     value: ScanMode.qr,
-                    label: Text('QR Scan'),
+                    label: Text('Quét QR'),
                     icon: Icon(Icons.qr_code_scanner),
                   ),
                   ButtonSegment<ScanMode>(

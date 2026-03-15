@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:growingkids/app/blocs/auth/auth_bloc.dart';
 import 'package:growingkids/app/router/routes_name.dart';
+import 'package:growingkids/features/auth/domain/repositories/auth_repository.dart';
 import 'package:growingkids/features/auth/presentation/widgets/enter/login_form.dart';
 import 'package:growingkids/features/auth/presentation/widgets/enter/register_form.dart';
 
@@ -15,6 +16,10 @@ class EnterScreen extends StatefulWidget {
 
 class _EnterScreenState extends State<EnterScreen> {
   bool _isLogin = true;
+
+  void _signInWithSocial(SocialAuthProvider provider) {
+    context.read<AuthBloc>().add(AuthSocialSignInRequested(provider));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +106,7 @@ class _EnterScreenState extends State<EnterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'CHÀO MỪNG ĐẾN VỚI PLANTIFY',
+                          'CHÀO MỪNG ĐẾN VỚI GROWINGKIDS',
                           style: TextStyle(
                             fontSize: 18,
                             color: Color.lerp(cs.primary, Colors.white, 0.4),
@@ -171,7 +176,11 @@ class _EnterScreenState extends State<EnterScreen> {
                                             ),
                                           ),
                                         ),
-                                        onPressed: () {},
+                                        onPressed: isSubmitting
+                                            ? null
+                                            : () => _signInWithSocial(
+                                                SocialAuthProvider.google,
+                                              ),
                                         child: Row(
                                           spacing: 12,
                                           mainAxisAlignment:
@@ -205,7 +214,11 @@ class _EnterScreenState extends State<EnterScreen> {
                                             color: Color(0xFF1877F2),
                                           ),
                                         ),
-                                        onPressed: () {},
+                                        onPressed: isSubmitting
+                                            ? null
+                                            : () => _signInWithSocial(
+                                                SocialAuthProvider.facebook,
+                                              ),
                                         child: Row(
                                           spacing: 12,
                                           mainAxisAlignment:

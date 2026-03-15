@@ -41,7 +41,6 @@ class _RegisterFormState extends State<RegisterForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // NAME FIELD
           TextFormField(
             decoration: const InputDecoration(
               labelText: 'Tên đầy đủ',
@@ -60,7 +59,6 @@ class _RegisterFormState extends State<RegisterForm> {
           ),
           const SizedBox(height: 16),
 
-          // EMAIL FIELD
           TextFormField(
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
@@ -75,7 +73,6 @@ class _RegisterFormState extends State<RegisterForm> {
           ),
           const SizedBox(height: 16),
 
-          // PASSWORD FIELD
           TextFormField(
             obscureText: true,
             decoration: const InputDecoration(
@@ -90,7 +87,6 @@ class _RegisterFormState extends State<RegisterForm> {
           ),
           const SizedBox(height: 32),
 
-          // SUBMIT BUTTON
           FilledButton(
             onPressed: isSubmitting ? null : _submitForm,
             style: FilledButton.styleFrom(
@@ -108,7 +104,7 @@ class _RegisterFormState extends State<RegisterForm> {
                       color: Colors.white,
                     ),
                   )
-                : const Text('Register', style: TextStyle(fontSize: 16)),
+                : const Text('Đăng ký', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),

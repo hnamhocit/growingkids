@@ -9,8 +9,17 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<UserProfile> getUserProfile(String userId) async {
-    final data = await client.from('users').select().eq('id', userId).single();
+    final userData = await client
+        .from('users')
+        .select()
+        .eq('id', userId)
+        .single();
+    final streakData = await client
+        .from('user_streaks')
+        .select('current_streak, longest_streak, last_checkin_date')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    return UserProfile.fromMap(data);
+    return UserProfile.fromMap({...userData, ...?streakData});
   }
 }

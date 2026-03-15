@@ -19,7 +19,7 @@ class HomeSearchBar extends StatelessWidget {
       ),
       child: TextField(
         decoration: InputDecoration(
-          hintText: 'Search fertilizers, soil, tools...',
+          hintText: 'Tìm phân bón, đất trồng, dụng cụ...',
           hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
           prefixIcon: const Icon(Icons.search, color: Colors.grey),
           border: InputBorder.none,

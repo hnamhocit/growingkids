@@ -33,14 +33,14 @@ class AppBottomNagivationBar extends StatelessWidget {
           children: [
             _buildNavItem(
               icon: Icons.home_filled,
-              label: 'Home',
+              label: 'Trang chủ',
               isActive: activeTab == AppTab.home,
               onTap: () => _goToTab(context, AppTab.home),
               context: context,
             ),
             _buildNavItem(
               icon: Icons.grid_view_rounded,
-              label: 'Catalog',
+              label: 'Danh mục',
               isActive: false,
               onTap: () {},
               context: context,
@@ -48,14 +48,14 @@ class AppBottomNagivationBar extends StatelessWidget {
             _buildCenterButton(context, isActive: activeTab == AppTab.scan),
             _buildNavItem(
               icon: Icons.eco_outlined,
-              label: 'My Plants',
+              label: 'Cây của tôi',
               isActive: false,
               onTap: () {},
               context: context,
             ),
             _buildNavItem(
               icon: Icons.person_outline,
-              label: 'Profile',
+              label: 'Hồ sơ',
               isActive: activeTab == AppTab.profile,
               onTap: () => _goToTab(context, AppTab.profile),
               context: context,

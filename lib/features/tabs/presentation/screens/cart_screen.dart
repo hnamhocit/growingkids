@@ -7,14 +7,14 @@ import 'package:growingkids/app/router/routes_name.dart';
 final cartItems = [
   {
     'name': 'Monstera Deliciosa',
-    'sub': 'Large, Indoor',
+    'sub': 'Loại lớn, trong nhà',
     'price': '\$25.00',
     'qty': 1,
     'img': 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=200',
   },
   {
     'name': 'Snake Plant',
-    'sub': 'Medium, Low light',
+    'sub': 'Loại vừa, ít sáng',
     'price': '\$36.00',
     'qty': 2,
     'img':
@@ -22,7 +22,7 @@ final cartItems = [
   },
   {
     'name': 'Fiddle Leaf Fig',
-    'sub': 'Extra Large',
+    'sub': 'Kích thước rất lớn',
     'price': '\$45.00',
     'qty': 1,
     'img':
@@ -54,7 +54,7 @@ class CartScreen extends StatelessWidget {
           },
         ),
         title: Text(
-          'My Cart',
+          'Giỏ hàng của tôi',
           style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -62,7 +62,7 @@ class CartScreen extends StatelessWidget {
           TextButton(
             onPressed: () {},
             child: Text(
-              'Edit',
+              'Sửa',
               style: TextStyle(
                 color: cs.primary, // Màu xanh từ Theme
                 fontWeight: FontWeight.w600,
@@ -96,7 +96,7 @@ class CartScreen extends StatelessWidget {
                     vertical: 16,
                   ),
                   decoration: BoxDecoration(
-                    color: cs.primary.withOpacity(0.15), // Nền xanh nhạt
+                    color: cs.primary.withValues(alpha: 0.15), // Nền xanh nhạt
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -105,7 +105,7 @@ class CartScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       const Expanded(
                         child: Text(
-                          'Apply Promo Code',
+                          'Áp dụng mã giảm giá',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
@@ -130,7 +130,7 @@ class CartScreen extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 ),
@@ -138,9 +138,9 @@ class CartScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildPriceRow('Subtotal', '\$106.00', isBold: false),
+                _buildPriceRow('Tạm tính', '\$106.00', isBold: false),
                 const SizedBox(height: 12),
-                _buildPriceRow('Shipping', '\$12.00', isBold: false),
+                _buildPriceRow('Phí vận chuyển', '\$12.00', isBold: false),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Divider(),
@@ -149,7 +149,7 @@ class CartScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Total',
+                      'Tổng cộng',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -183,7 +183,7 @@ class CartScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Proceed to Checkout',
+                          'Tiến hành thanh toán',
                           style: TextStyle(
                             color: cs.onPrimary, // Chữ đen theo design
                             fontWeight: FontWeight.bold,
@@ -239,7 +239,7 @@ class _CartItemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

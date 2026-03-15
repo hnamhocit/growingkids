@@ -41,7 +41,7 @@ class PromoBanner extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  'GROWTH SEASON',
+                  'MÙA TĂNG TRƯỞNG',
                   style: TextStyle(
                     color: Color(0xFF22C55E),
                     fontWeight: FontWeight.bold,
@@ -51,7 +51,7 @@ class PromoBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  '30% Off Liquid\nNutrients',
+                  'Giảm 30% cho\nphân bón nước',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -73,7 +73,7 @@ class PromoBanner extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Shop Boosters',
+                    'Mua ngay',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,

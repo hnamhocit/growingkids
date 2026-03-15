@@ -7,6 +7,8 @@ import 'package:growingkids/app/router/routes_name.dart';
 import 'package:growingkids/features/products/presentation/widgets/app_bottom_nagivation_bar.dart';
 import 'package:growingkids/features/tabs/presentation/widgets/home/index.dart';
 
+const _notificationBadgeCount = 4;
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -16,18 +18,20 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      // 1. APP BAR TÙY CHỈNH
       appBar: AppBar(
         backgroundColor: backgroundColor,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black),
-          onPressed: () {},
+        leadingWidth: 150,
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 16),
+          child: _HomeBrand(),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {},
+          _NotificationsButton(
+            count: _notificationBadgeCount,
+            onPressed: () {
+              context.pushNamed(RoutesName.tabNotifications);
+            },
           ),
           Stack(
             alignment: Alignment.center,
@@ -100,6 +104,74 @@ class HomeScreen extends StatelessWidget {
       ),
 
       bottomNavigationBar: const AppBottomNagivationBar(activeTab: AppTab.home),
+    );
+  }
+}
+
+class _HomeBrand extends StatelessWidget {
+  const _HomeBrand();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        'GrowingKids',
+        style: TextStyle(
+          color: cs.primary,
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationsButton extends StatelessWidget {
+  final int count;
+  final VoidCallback onPressed;
+
+  const _NotificationsButton({required this.count, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 2),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none, color: Colors.black),
+            onPressed: onPressed,
+          ),
+          if (count > 0)
+            Positioned(
+              top: 6,
+              right: 5,
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD9485F),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: const Color(0xFFF7F9F8), width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

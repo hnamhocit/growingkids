@@ -91,7 +91,7 @@ class _LoginFormState extends State<LoginForm> {
                       color: Colors.white,
                     ),
                   )
-                : const Text('Login', style: TextStyle(fontSize: 16)),
+                : const Text('Đăng nhập', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),

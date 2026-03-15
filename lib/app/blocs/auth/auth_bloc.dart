@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:growingkids/features/auth/domain/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,20 +9,37 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
+  late final StreamSubscription<User?> _authStateSubscription;
 
   AuthBloc({required AuthRepository authRepository})
     : _authRepository = authRepository,
       super(const AuthInitial()) {
     on<AuthStarted>(_onStarted);
+    on<AuthStatusChanged>(_onStatusChanged);
     on<AuthSignInRequested>(_onSignInRequested);
     on<AuthSignUpRequested>(_onSignUpRequested);
+    on<AuthSocialSignInRequested>(_onSocialSignInRequested);
     on<AuthSignOutRequested>(_onSignOutRequested);
+
+    _authStateSubscription = _authRepository.authStateChanges.listen((user) {
+      add(AuthStatusChanged(user));
+    });
 
     add(const AuthStarted());
   }
 
   void _onStarted(AuthStarted event, Emitter<AuthState> emit) {
     final user = _authRepository.currentUser;
+    if (user != null) {
+      emit(AuthAuthenticated(user));
+      return;
+    }
+
+    emit(const AuthUnauthenticated());
+  }
+
+  void _onStatusChanged(AuthStatusChanged event, Emitter<AuthState> emit) {
+    final user = event.user;
     if (user != null) {
       emit(AuthAuthenticated(user));
       return;
@@ -91,6 +110,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
+  Future<void> _onSocialSignInRequested(
+    AuthSocialSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      await _authRepository.signInWithSocial(event.provider);
+      emit(const AuthUnauthenticated());
+    } on AuthException catch (error) {
+      emit(AuthFailure(error.message));
+      emit(const AuthUnauthenticated());
+    } catch (error) {
+      emit(
+        AuthFailure(
+          'Không thể bắt đầu đăng nhập mạng xã hội. Chi tiết: $error',
+        ),
+      );
+      emit(const AuthUnauthenticated());
+    }
+  }
+
   Future<void> _onSignOutRequested(
     AuthSignOutRequested event,
     Emitter<AuthState> emit,
@@ -106,5 +146,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(const AuthFailure('Không thể đăng xuất lúc này.'));
       emit(const AuthUnauthenticated());
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _authStateSubscription.cancel();
+    return super.close();
   }
 }

@@ -8,4 +8,5 @@ abstract class RoutesName {
   static const tabMyPlants = 'tab.my_plants';
   static const tabProfile = 'tab.profile';
   static const tabCart = 'tab.cart';
+  static const tabNotifications = 'tab.notifications';
 }
