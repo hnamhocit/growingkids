@@ -14,7 +14,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = const Color(0xFFF7F9F8);
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final backgroundColor = theme.scaffoldBackgroundColor;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -37,10 +39,7 @@ class HomeScreen extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               IconButton(
-                icon: const Icon(
-                  Icons.shopping_bag_outlined,
-                  color: Colors.black,
-                ),
+                icon: Icon(Icons.shopping_bag_outlined, color: cs.onSurface),
                 onPressed: () {
                   context.pushNamed(RoutesName.tabCart);
                 },
@@ -66,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () {
                     context.pushNamed(RoutesName.authEnter);
                   },
-                  icon: const Icon(Icons.person_outline, color: Colors.black),
+                  icon: Icon(Icons.person_outline, color: cs.onSurface),
                 );
               }
 
@@ -137,13 +136,15 @@ class _NotificationsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(right: 2),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
+            icon: Icon(Icons.notifications_none, color: cs.onSurface),
             onPressed: onPressed,
           ),
           if (count > 0)
@@ -156,7 +157,10 @@ class _NotificationsButton extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFFD9485F),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: const Color(0xFFF7F9F8), width: 2),
+                  border: Border.all(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    width: 2,
+                  ),
                 ),
                 child: Center(
                   child: Text(

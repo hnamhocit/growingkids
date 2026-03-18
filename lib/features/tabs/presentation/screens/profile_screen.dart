@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:growingkids/app/theme/theme_cubit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:growingkids/app/blocs/auth/auth_bloc.dart';
 import 'package:growingkids/app/blocs/user/user_bloc.dart';
@@ -12,17 +13,18 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F4),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F8F4),
-        elevation: 0,
+        backgroundColor: theme.scaffoldBackgroundColor,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Hồ sơ',
           style: TextStyle(
-            color: Colors.black,
+            color: cs.onSurface,
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
@@ -32,9 +34,9 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(
               onPressed: () {},
-              icon: const Icon(
+              icon: Icon(
                 Icons.settings_outlined,
-                color: Colors.black,
+                color: cs.onSurface,
                 size: 24,
               ),
             ),
@@ -56,6 +58,8 @@ class _GuestProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return SafeArea(
       top: false,
       child: SingleChildScrollView(
@@ -64,9 +68,13 @@ class _GuestProfile extends StatelessWidget {
           children: [
             const _ProfileAvatar(photoUrl: null, radius: 54),
             const SizedBox(height: 14),
-            const Text(
+            Text(
               'Bạn chưa đăng nhập',
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w800,
+                color: cs.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -74,7 +82,7 @@ class _GuestProfile extends StatelessWidget {
               'Đăng nhập để lưu cây yêu thích, theo dõi đơn hàng và cá nhân hóa trải nghiệm chăm cây của bạn.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.grey.shade600,
+                color: cs.onSurfaceVariant,
                 fontSize: 14,
                 height: 1.45,
               ),
@@ -84,7 +92,7 @@ class _GuestProfile extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -143,7 +151,8 @@ class _GuestProfile extends StatelessWidget {
               },
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
-                backgroundColor: const Color(0xFF2F7D4E),
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -169,6 +178,9 @@ class _AuthenticatedProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     final userState = context.watch<UserBloc>().state;
+    final cs = Theme.of(context).colorScheme;
+    final themeMode = context.watch<ThemeCubit>().state;
+    final isDarkModeEnabled = themeMode == ThemeMode.dark;
 
     String displayName = 'Người dùng';
     String email = '';
@@ -189,7 +201,7 @@ class _AuthenticatedProfile extends StatelessWidget {
     if (userState is UserLoaded && userState.profile.id == userId) {
       displayName = userState.profile.displayName;
       photoUrl = userState.profile.photoUrl;
-      role = _roleHeadline(userState.profile.role.name);
+      role = _roleLabel(userState.profile.role.name);
       joinedAt = userState.profile.createdAt;
       greenPoint = userState.profile.greenPoint;
       currentStreak = userState.profile.currentStreak;
@@ -216,7 +228,11 @@ class _AuthenticatedProfile extends StatelessWidget {
             Text(
               displayName,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w800,
+                color: cs.onSurface,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
@@ -227,7 +243,7 @@ class _AuthenticatedProfile extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.grey.shade600,
+                color: cs.onSurfaceVariant,
                 fontSize: 14,
                 height: 1.4,
               ),
@@ -306,6 +322,13 @@ class _AuthenticatedProfile extends StatelessWidget {
               onTap: () {},
             ),
             const SizedBox(height: 12),
+            _ThemeModeTile(
+              value: isDarkModeEnabled,
+              onChanged: (value) {
+                context.read<ThemeCubit>().setDarkMode(value);
+              },
+            ),
+            const SizedBox(height: 12),
             _ProfileMenuTile(
               icon: Icons.logout_rounded,
               title: 'Đăng xuất',
@@ -331,22 +354,24 @@ class _ProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final diameter = radius * 2;
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       width: diameter + 8,
       height: diameter + 8,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF2F7D4E), width: 2.5),
+        border: Border.all(color: cs.primary, width: 2.5),
       ),
       child: CircleAvatar(
         radius: radius,
-        backgroundColor: const Color(0xFFE9ECE6),
+        backgroundColor: cs.surfaceContainerHighest,
         backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
             ? NetworkImage(photoUrl!)
             : null,
         child: photoUrl == null || photoUrl!.isEmpty
-            ? const Icon(Icons.person, size: 44, color: Colors.black45)
+            ? Icon(Icons.person, size: 44, color: cs.onSurfaceVariant)
             : null,
       ),
     );
@@ -370,13 +395,17 @@ class _WideStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-      decoration: _surfaceDecoration(),
+      decoration: _surfaceDecoration(context),
       child: Row(
         children: [
           Expanded(
             child: _StatTextBlock(value: leftValue, label: leftLabel),
           ),
-          Container(width: 1, height: 50, color: const Color(0xFFF0F1EC)),
+          Container(
+            width: 1,
+            height: 50,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
           Expanded(
             child: _StatTextBlock(value: rightValue, label: rightLabel),
           ),
@@ -401,23 +430,29 @@ class _MiniStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-      decoration: _surfaceDecoration(),
+      decoration: _surfaceDecoration(context),
       child: Column(
         children: [
           Icon(icon, color: iconColor, size: 24),
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: cs.onSurface,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: Colors.grey.shade500,
+              color: cs.onSurfaceVariant,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -437,18 +472,24 @@ class _StatTextBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: cs.onSurface,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 5),
         Text(
           label,
           style: TextStyle(
-            color: Colors.grey.shade500,
+            color: cs.onSurfaceVariant,
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
@@ -463,37 +504,39 @@ class _ProfileMenuTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
-  final Color iconColor;
-  final Color titleColor;
+  final Color? iconColor;
+  final Color? titleColor;
 
   const _ProfileMenuTile({
     required this.icon,
     required this.title,
     required this.onTap,
-    this.iconColor = Colors.black,
-    this.titleColor = Colors.black,
+    this.iconColor,
+    this.titleColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: _surfaceDecoration(shadow: false),
+          decoration: _surfaceDecoration(context, shadow: false),
           child: Row(
             children: [
-              Icon(icon, size: 24, color: iconColor),
+              Icon(icon, size: 24, color: iconColor ?? cs.onSurface),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: titleColor,
+                    color: titleColor ?? cs.onSurface,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -501,12 +544,60 @@ class _ProfileMenuTile extends StatelessWidget {
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: Colors.grey.shade400,
+                color: cs.onSurfaceVariant,
                 size: 28,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ThemeModeTile extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _ThemeModeTile({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: _surfaceDecoration(context, shadow: false),
+      child: Row(
+        children: [
+          Icon(Icons.dark_mode_outlined, color: cs.onSurface, size: 24),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Chế độ tối',
+                  style: TextStyle(
+                    color: cs.onSurface,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Lưu lại lựa chọn giao diện cho lần mở sau.',
+                  style: TextStyle(
+                    color: cs.onSurfaceVariant,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(value: value, onChanged: onChanged),
+        ],
       ),
     );
   }
@@ -574,19 +665,23 @@ String _buildProfileSubtitle({
   return '$role | $joinedText';
 }
 
-String _roleHeadline(String role) {
+String _roleLabel(String role) {
   return switch (role) {
-    'admin' => 'Người gieo mầm cộng đồng',
-    'staff' => 'Chuyên gia chăm cây',
-    'customer' => 'Người yêu cây đô thị',
+    'admin' => 'Admin',
+    'staff' => 'Nhân viên',
+    'customer' => 'Khách hàng',
     _ => 'Người yêu cây',
   };
 }
 
-BoxDecoration _surfaceDecoration({bool shadow = true}) {
+BoxDecoration _surfaceDecoration(BuildContext context, {bool shadow = true}) {
+  final theme = Theme.of(context);
+  final cs = theme.colorScheme;
+
   return BoxDecoration(
-    color: Colors.white,
+    color: theme.cardColor,
     borderRadius: BorderRadius.circular(20),
+    border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.45)),
     boxShadow: shadow
         ? [
             BoxShadow(

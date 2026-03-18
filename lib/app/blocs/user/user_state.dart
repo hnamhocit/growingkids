@@ -14,8 +14,9 @@ class UserLoading extends UserState {
 
 class UserLoaded extends UserState {
   final UserProfile profile;
+  final LoginStreakSyncResult? loginStreakSyncResult;
 
-  const UserLoaded(this.profile);
+  const UserLoaded(this.profile, {this.loginStreakSyncResult});
 }
 
 class UserFailure extends UserState {

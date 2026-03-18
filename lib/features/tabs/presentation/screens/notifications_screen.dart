@@ -5,18 +5,18 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const backgroundColor = Color(0xFFF8F8F4);
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
-        elevation: 0,
+        backgroundColor: theme.scaffoldBackgroundColor,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Thông báo',
           style: TextStyle(
-            color: Colors.black,
+            color: cs.onSurface,
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
@@ -24,12 +24,9 @@ class NotificationsScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {},
-            child: const Text(
+            child: Text(
               'Đánh dấu đã đọc',
-              style: TextStyle(
-                color: Color(0xFF2F7D4E),
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(color: cs.primary, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -43,7 +40,7 @@ class NotificationsScreen extends StatelessWidget {
             return Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF7F1),
+                color: cs.primary.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(22),
               ),
               child: Row(
@@ -51,8 +48,8 @@ class NotificationsScreen extends StatelessWidget {
                   Container(
                     width: 44,
                     height: 44,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF2F7D4E),
+                    decoration: BoxDecoration(
+                      color: cs.primary,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -61,10 +58,11 @@ class NotificationsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Bạn có 4 thông báo mới hôm nay. Đừng bỏ lỡ ưu đãi và cập nhật đơn hàng.',
                       style: TextStyle(
+                        color: cs.onSurface,
                         fontSize: 14,
                         height: 1.45,
                         fontWeight: FontWeight.w600,
@@ -91,10 +89,13 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
@@ -147,7 +148,7 @@ class _NotificationCard extends StatelessWidget {
                 Text(
                   item.message,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
+                    color: cs.onSurfaceVariant,
                     fontSize: 14,
                     height: 1.45,
                   ),
@@ -156,7 +157,7 @@ class _NotificationCard extends StatelessWidget {
                 Text(
                   item.time,
                   style: TextStyle(
-                    color: Colors.grey.shade500,
+                    color: cs.onSurfaceVariant,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),

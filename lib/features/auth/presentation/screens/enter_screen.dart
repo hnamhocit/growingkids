@@ -186,8 +186,8 @@ class _EnterScreenState extends State<EnterScreen> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Image.network(
-                                              'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/3840px-Google_%22G%22_logo.svg.png',
+                                            Image.asset(
+                                              'assets/images/google.png',
                                               width: 20,
                                               height: 20,
                                             ),
@@ -224,8 +224,8 @@ class _EnterScreenState extends State<EnterScreen> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Image.network(
-                                              'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_(2019).png/3840px-Facebook_Logo_(2019).png',
+                                            Image.asset(
+                                              'assets/images/facebook.png',
                                               width: 20,
                                               height: 20,
                                             ),

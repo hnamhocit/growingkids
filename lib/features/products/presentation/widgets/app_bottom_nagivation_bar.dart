@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:growingkids/app/router/routes_name.dart';
 
-enum AppTab { home, scan, profile }
+enum AppTab { home, scan, myPlants, profile }
 
 class AppBottomNagivationBar extends StatelessWidget {
   final AppTab activeTab;
@@ -11,13 +11,15 @@ class AppBottomNagivationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.only(
         top: 12,
         bottom: 20,
       ), // Padding trên/dưới cho thanh điều hướng
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -49,8 +51,8 @@ class AppBottomNagivationBar extends StatelessWidget {
             _buildNavItem(
               icon: Icons.eco_outlined,
               label: 'Cây của tôi',
-              isActive: false,
-              onTap: () {},
+              isActive: activeTab == AppTab.myPlants,
+              onTap: () => _goToTab(context, AppTab.myPlants),
               context: context,
             ),
             _buildNavItem(
@@ -103,6 +105,9 @@ class AppBottomNagivationBar extends StatelessWidget {
       case AppTab.scan:
         context.goNamed(RoutesName.tabScan);
         return;
+      case AppTab.myPlants:
+        context.goNamed(RoutesName.tabMyPlants);
+        return;
       case AppTab.profile:
         context.goNamed(RoutesName.tabProfile);
         return;
@@ -124,13 +129,13 @@ class AppBottomNagivationBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: isActive ? cs.primary : Colors.grey),
+          Icon(icon, color: isActive ? cs.primary : cs.onSurfaceVariant),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
               fontSize: 10,
-              color: isActive ? cs.primary : Colors.grey,
+              color: isActive ? cs.primary : cs.onSurfaceVariant,
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
           ),

@@ -236,17 +236,18 @@ class _ScanScreenState extends State<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final tt = Theme.of(context).textTheme;
+    final cs = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9F8),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7F9F8),
-        elevation: 0,
+        backgroundColor: theme.scaffoldBackgroundColor,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Quét',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.bold),
         ),
       ),
       body: Padding(
@@ -358,6 +359,8 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Widget _buildCaptureButton() {
+    final cs = Theme.of(context).colorScheme;
+
     return SizedBox(
       height: 74,
       child: Center(
@@ -369,7 +372,7 @@ class _ScanScreenState extends State<ScanScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 4),
-              color: _isTakingPhoto ? Colors.grey : const Color(0xFF16A34A),
+              color: _isTakingPhoto ? Colors.grey : cs.primary,
               boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
@@ -394,22 +397,25 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Widget _buildErrorCard(String message) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.camera_alt_outlined, size: 54, color: Colors.red),
+          Icon(Icons.camera_alt_outlined, size: 54, color: cs.error),
           const SizedBox(height: 12),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface),
           ),
         ],
       ),

@@ -35,16 +35,16 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final backgroundColor = const Color(0xFFF7F9F8);
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final backgroundColor = theme.scaffoldBackgroundColor;
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.chevronLeft, color: Colors.black),
+          icon: Icon(LucideIcons.chevronLeft, color: cs.onSurface),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -103,16 +103,17 @@ class CartScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.local_offer, color: cs.primary),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Áp dụng mã giảm giá',
                           style: TextStyle(
+                            color: cs.onSurface,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: Colors.grey.shade600),
+                      Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
                     ],
                   ),
                 ),
@@ -124,7 +125,7 @@ class CartScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardColor,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(30),
               ),
@@ -138,9 +139,14 @@ class CartScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildPriceRow('Tạm tính', '\$106.00', isBold: false),
+                _buildPriceRow(context, 'Tạm tính', '\$106.00', isBold: false),
                 const SizedBox(height: 12),
-                _buildPriceRow('Phí vận chuyển', '\$12.00', isBold: false),
+                _buildPriceRow(
+                  context,
+                  'Phí vận chuyển',
+                  '\$12.00',
+                  isBold: false,
+                ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Divider(),
@@ -148,11 +154,12 @@ class CartScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Tổng cộng',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: cs.onSurface,
                       ),
                     ),
                     Text(
@@ -205,15 +212,22 @@ class CartScreen extends StatelessWidget {
   }
 
   // Row hiển thị giá Subtotal / Shipping
-  Widget _buildPriceRow(String label, String value, {required bool isBold}) {
+  Widget _buildPriceRow(
+    BuildContext context,
+    String label,
+    String value, {
+    required bool isBold,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 15)),
+        Text(label, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 15)),
         Text(
           value,
           style: TextStyle(
-            color: Colors.black,
+            color: cs.onSurface,
             fontSize: 15,
             fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
           ),
@@ -232,10 +246,13 @@ class _CartItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -252,7 +269,7 @@ class _CartItemCard extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFFF0F0F0), // Nền xám nhạt cho ảnh
+              color: cs.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(16),
               image: DecorationImage(
                 image: NetworkImage(item['img']),
@@ -274,9 +291,10 @@ class _CartItemCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item['name'],
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          color: cs.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -289,7 +307,7 @@ class _CartItemCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   item['sub'],
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
                 ),
                 const SizedBox(height: 12),
 
@@ -312,22 +330,23 @@ class _CartItemCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: cs.outlineVariant),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.remove, size: 16),
+                          Icon(Icons.remove, size: 16, color: cs.onSurface),
                           const SizedBox(width: 12),
                           Text(
                             item['qty'].toString(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
+                              color: cs.onSurface,
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Icon(Icons.add, size: 16),
+                          Icon(Icons.add, size: 16, color: cs.onSurface),
                         ],
                       ),
                     ),

@@ -6,8 +6,14 @@ sealed class UserEvent {
 
 class UserProfileRequested extends UserEvent {
   final String userId;
+  final bool syncLoginStreak;
+  final bool forceRefresh;
 
-  const UserProfileRequested(this.userId);
+  const UserProfileRequested(
+    this.userId, {
+    this.syncLoginStreak = false,
+    this.forceRefresh = false,
+  });
 }
 
 class UserProfileCleared extends UserEvent {
