@@ -4,6 +4,7 @@ import 'package:growingkids/features/auth/presentation/screens/index.dart';
 import 'package:growingkids/features/banners/presentation/screens/banners_screen.dart';
 import 'package:growingkids/features/categories/presentation/screens/categories_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:growingkids/features/products/presentation/screens/product_detail_screen.dart';
 import 'package:growingkids/features/tabs/presentation/screens/cart_screen.dart';
 import 'package:growingkids/features/tabs/presentation/screens/home_screen.dart';
 import 'package:growingkids/features/tabs/presentation/screens/my_plants_screen.dart';
@@ -48,6 +49,14 @@ GoRouter makeRouter({GlobalKey<NavigatorState>? navigatorKey}) {
         path: '/categories',
         name: RoutesName.tabCatalog,
         builder: (context, state) => const CategoriesScreen(),
+      ),
+      GoRoute(
+        path: '/products/:productId',
+        name: RoutesName.productDetail,
+        builder: (context, state) {
+          final productId = state.pathParameters['productId'] ?? '';
+          return ProductDetailScreen(productId: productId);
+        },
       ),
       GoRoute(
         path: '/my-plants',

@@ -3,10 +3,19 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:go_router/go_router.dart';
+import 'package:growingkids/features/products/domain/services/app_qr_link_codec.dart';
 import 'package:growingkids/features/products/presentation/widgets/app_bottom_nagivation_bar.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+part 'scan_screen_actions.dart';
+part 'scan_screen_view.dart';
 
 enum ScanMode { qr, photo }
+
+enum _QrLinkSheetAction { dismiss, open }
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -15,12 +24,14 @@ class ScanScreen extends StatefulWidget {
   State<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends State<ScanScreen> {
+class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   final MobileScannerController _qrController = MobileScannerController(
+    autoStart: false,
     formats: const [BarcodeFormat.qrCode],
     detectionSpeed: DetectionSpeed.noDuplicates,
     facing: CameraFacing.back,
   );
+  final ImagePicker _imagePicker = ImagePicker();
 
   CameraController? _photoController;
 
@@ -28,22 +39,47 @@ class _ScanScreenState extends State<ScanScreen> {
   bool _isPreparing = true;
   bool _isSwitchingMode = false;
   bool _isTakingPhoto = false;
+  bool _isPickingGallery = false;
+  bool _isOpeningInternalRoute = false;
+  bool _isShowingLinkModal = false;
 
   String? _cameraError;
   String? _lastQrValue;
+  DateTime? _lastQrHandledAt;
   String? _capturedPhotoPath;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _activateMode(_mode);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _qrController.dispose();
     _photoController?.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_mode != ScanMode.qr || !_qrController.value.hasCameraPermission) {
+      return;
+    }
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _scheduleQrStart();
+        return;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        _stopQrScanner();
+        return;
+    }
   }
 
   Future<void> _switchMode(ScanMode nextMode) async {
@@ -82,28 +118,12 @@ class _ScanScreenState extends State<ScanScreen> {
           _cameraError = null;
         });
 
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          if (!mounted || _mode != ScanMode.qr) {
-            return;
-          }
-
-          try {
-            await _qrController.start();
-          } catch (_) {
-            if (!mounted) {
-              return;
-            }
-            setState(() {
-              _cameraError =
-                  'QR không thể mở camera. Vui lòng kiểm tra quyền camera.';
-            });
-          }
-        });
+        _scheduleQrStart();
         return;
-      } else {
-        await _qrController.stop();
-        await _initPhotoController();
       }
+
+      await _stopQrScanner();
+      await _initPhotoController();
     } catch (_) {
       _cameraError = 'Không thể truy cập camera. Vui lòng cấp quyền camera.';
     }
@@ -123,7 +143,7 @@ class _ScanScreenState extends State<ScanScreen> {
       throw StateError('Không tìm thấy camera khả dụng');
     }
 
-    CameraDescription selectedCamera = cameras.first;
+    var selectedCamera = cameras.first;
     for (final camera in cameras) {
       if (camera.lensDirection == CameraLensDirection.back) {
         selectedCamera = camera;
@@ -159,85 +179,79 @@ class _ScanScreenState extends State<ScanScreen> {
     }
   }
 
-  void _onQrDetected(BarcodeCapture capture) {
-    if (_mode != ScanMode.qr) {
+  void _scheduleQrStart() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startQrScanner();
+    });
+  }
+
+  Future<void> _startQrScanner() async {
+    if (!mounted ||
+        _mode != ScanMode.qr ||
+        _qrController.value.isRunning ||
+        _qrController.value.isStarting) {
       return;
     }
 
-    String? rawValue;
+    await _qrController.start();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (_mode != ScanMode.qr) {
+      await _stopQrScanner();
+      return;
+    }
+
+    final error = _qrController.value.error;
+    if (error != null) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _stopQrScanner() async {
+    await _qrController.stop();
+  }
+
+  void _onQrDetected(BarcodeCapture capture) {
+    if (_mode != ScanMode.qr ||
+        _isOpeningInternalRoute ||
+        _isPickingGallery ||
+        _isShowingLinkModal) {
+      return;
+    }
+
+    final rawValue = _firstBarcodeValue(capture);
+    if (rawValue == null) {
+      return;
+    }
+
+    _handleQrValue(rawValue);
+  }
+
+  String? _firstBarcodeValue(BarcodeCapture capture) {
     for (final barcode in capture.barcodes) {
       final value = barcode.rawValue;
       if (value != null && value.isNotEmpty) {
-        rawValue = value;
-        break;
+        return value;
       }
     }
 
-    if (rawValue == null || rawValue == _lastQrValue) {
-      return;
-    }
-
-    setState(() {
-      _lastQrValue = rawValue;
-    });
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('QR: $rawValue'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    return null;
   }
 
-  Future<void> _takePhoto() async {
-    final controller = _photoController;
-    if (controller == null ||
-        !controller.value.isInitialized ||
-        _isTakingPhoto) {
+  void _updateView(VoidCallback update) {
+    if (!mounted) {
       return;
     }
 
-    setState(() {
-      _isTakingPhoto = true;
-    });
-
-    try {
-      final photo = await controller.takePicture();
-
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _capturedPhotoPath = photo.path;
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text('Chụp ảnh thất bại. Vui lòng thử lại.'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isTakingPhoto = false;
-        });
-      }
-    }
+    setState(update);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final tt = Theme.of(context).textTheme;
     final cs = theme.colorScheme;
 
     return Scaffold(
@@ -277,222 +291,11 @@ class _ScanScreenState extends State<ScanScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            Expanded(child: _buildCameraBody(context)),
-            if (_mode == ScanMode.photo) ...[
-              const SizedBox(height: 16),
-              _buildCaptureButton(),
-            ] else if (_lastQrValue != null) ...[
-              const SizedBox(height: 14),
-              Text(
-                'Kết quả gần nhất: $_lastQrValue',
-                style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-            ],
+            Expanded(child: _buildScanViewport(context)),
           ],
         ),
       ),
       bottomNavigationBar: const AppBottomNagivationBar(activeTab: AppTab.scan),
     );
   }
-
-  Widget _buildCameraBody(BuildContext context) {
-    if (_cameraError != null) {
-      return _buildErrorCard(_cameraError!);
-    }
-
-    if (_isPreparing || _isSwitchingMode) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_mode == ScanMode.qr) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            MobileScanner(controller: _qrController, onDetect: _onQrDetected),
-            const _ScannerOverlay(),
-          ],
-        ),
-      );
-    }
-
-    final controller = _photoController;
-    if (controller == null || !controller.value.isInitialized) {
-      return _buildErrorCard('Camera chưa sẵn sàng. Vui lòng thử lại.');
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final previewSize = controller.value.previewSize;
-              if (previewSize == null) {
-                return const ColoredBox(color: Colors.black);
-              }
-
-              return FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: previewSize.height,
-                  height: previewSize.width,
-                  child: CameraPreview(controller),
-                ),
-              );
-            },
-          ),
-          if (_capturedPhotoPath != null)
-            Positioned(
-              right: 12,
-              bottom: 12,
-              child: _CapturedPreview(path: _capturedPhotoPath!),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCaptureButton() {
-    final cs = Theme.of(context).colorScheme;
-
-    return SizedBox(
-      height: 74,
-      child: Center(
-        child: GestureDetector(
-          onTap: _isTakingPhoto ? null : _takePhoto,
-          child: Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 4),
-              color: _isTakingPhoto ? Colors.grey : cs.primary,
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 12,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: _isTakingPhoto
-                ? const Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(
-                      strokeWidth: 3,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.camera_alt, color: Colors.white, size: 32),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorCard(String message) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.camera_alt_outlined, size: 54, color: cs.error),
-          const SizedBox(height: 12),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CapturedPreview extends StatelessWidget {
-  final String path;
-
-  const _CapturedPreview({required this.path});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        width: 72,
-        height: 96,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white, width: 2),
-        ),
-        child: kIsWeb
-            ? const ColoredBox(
-                color: Colors.black12,
-                child: Center(child: Icon(Icons.image, color: Colors.white)),
-              )
-            : Image.file(File(path), fit: BoxFit.cover),
-      ),
-    );
-  }
-}
-
-class _ScannerOverlay extends StatelessWidget {
-  const _ScannerOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _ScannerOverlayPainter(),
-      child: const SizedBox.expand(),
-    );
-  }
-}
-
-class _ScannerOverlayPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final overlayPaint = Paint()..color = Colors.black.withValues(alpha: 0.45);
-
-    final fullPath = Path()
-      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    const frameSize = 230.0;
-    final frameRect = Rect.fromCenter(
-      center: Offset(size.width / 2, size.height / 2),
-      width: frameSize,
-      height: frameSize,
-    );
-
-    final cutout = Path()
-      ..addRRect(RRect.fromRectAndRadius(frameRect, const Radius.circular(18)));
-
-    final maskPath = Path.combine(PathOperation.difference, fullPath, cutout);
-    canvas.drawPath(maskPath, overlayPaint);
-
-    final framePaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(frameRect, const Radius.circular(18)),
-      framePaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

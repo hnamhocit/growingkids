@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:growingkids/app/theme/theme_cubit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:growingkids/app/blocs/auth/auth_bloc.dart';
 import 'package:growingkids/app/blocs/user/user_bloc.dart';
@@ -179,8 +178,6 @@ class _AuthenticatedProfile extends StatelessWidget {
     final authState = context.watch<AuthBloc>().state;
     final userState = context.watch<UserBloc>().state;
     final cs = Theme.of(context).colorScheme;
-    final themeMode = context.watch<ThemeCubit>().state;
-    final isDarkModeEnabled = themeMode == ThemeMode.dark;
 
     String displayName = 'Người dùng';
     String email = '';
@@ -320,13 +317,6 @@ class _AuthenticatedProfile extends StatelessWidget {
               icon: Icons.help_outline_rounded,
               title: 'Trợ giúp và hỗ trợ',
               onTap: () {},
-            ),
-            const SizedBox(height: 12),
-            _ThemeModeTile(
-              value: isDarkModeEnabled,
-              onChanged: (value) {
-                context.read<ThemeCubit>().setDarkMode(value);
-              },
             ),
             const SizedBox(height: 12),
             _ProfileMenuTile(
@@ -550,54 +540,6 @@ class _ProfileMenuTile extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ThemeModeTile extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _ThemeModeTile({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: _surfaceDecoration(context, shadow: false),
-      child: Row(
-        children: [
-          Icon(Icons.dark_mode_outlined, color: cs.onSurface, size: 24),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Chế độ tối',
-                  style: TextStyle(
-                    color: cs.onSurface,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Lưu lại lựa chọn giao diện cho lần mở sau.',
-                  style: TextStyle(
-                    color: cs.onSurfaceVariant,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch.adaptive(value: value, onChanged: onChanged),
-        ],
       ),
     );
   }

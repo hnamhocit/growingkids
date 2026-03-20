@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:growingkids/app/theme/theme_cubit.dart';
 import 'package:growingkids/core/storage/streak_dialog_store.dart';
 import 'package:growingkids/core/widgets/login_streak_dialog.dart';
 import 'package:go_router/go_router.dart';
@@ -43,15 +42,13 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = context.watch<ThemeCubit>().state;
-
     return MaterialApp.router(
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
       title: 'GrowingKids',
       theme: lightTheme,
       darkTheme: darkTheme,
-      themeMode: themeMode,
+      themeMode: ThemeMode.system,
       builder: (context, child) {
         return MultiBlocListener(
           listeners: [

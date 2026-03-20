@@ -10,4 +10,5 @@ abstract class RoutesName {
   static const tabProfile = 'tab.profile';
   static const tabCart = 'tab.cart';
   static const tabNotifications = 'tab.notifications';
+  static const productDetail = 'product.detail';
 }
